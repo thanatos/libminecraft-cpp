@@ -82,6 +82,20 @@ namespace nbt {
 
 
 	namespace io {
+
+		const unsigned char TAG_TYPE_END = 0;
+		const unsigned char TAG_TYPE_BYTE = 1;
+		const unsigned char TAG_TYPE_SHORT = 2;
+		const unsigned char TAG_TYPE_INT = 3;
+		const unsigned char TAG_TYPE_LONG = 4;
+		const unsigned char TAG_TYPE_FLOAT = 5;
+		const unsigned char TAG_TYPE_DOUBLE = 6;
+		const unsigned char TAG_TYPE_BYTE_ARRAY = 7;
+		const unsigned char TAG_TYPE_STRING = 8;
+		const unsigned char TAG_TYPE_LIST = 9;
+		const unsigned char TAG_TYPE_COMPOUND = 10;
+		const unsigned char TAG_TYPE_INT_ARRAY = 11;
+
 		class IoError : public std::exception {
 		public:
 			virtual const char * what() const throw() {
