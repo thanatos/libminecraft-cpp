@@ -21,6 +21,7 @@ namespace nbt {
 		public:
 			std::vector<unsigned char> data;
 
+			Utf8String() : data() { }
 			Utf8String(unsigned char *p_data, size_t p_length) :
 				data(p_data, p_data + p_length) {}
 
