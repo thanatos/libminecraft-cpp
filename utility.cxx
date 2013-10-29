@@ -7,6 +7,10 @@
 namespace nbt {
 namespace utility {
 
+
+/* TagNameLookup is a class to look up, at compile time, the "pretty" name of
+ * the type of the tag. This is something like, "TAG_Compound".
+ */
 template<typename T>
 struct TagNameLookup;
 
@@ -34,6 +38,12 @@ struct TagNameLookup<CompoundTag> {
 };
 const char * const TagNameLookup<CompoundTag>::name = "TAG_Compound";
 
+
+/* An optional class. A wrapped class that contains a single instance of T, but
+ * only sometimes.
+ * This is similar to a nullable pointer.
+ */
+
 template<typename T>
 class Optional {
 public:
@@ -54,6 +64,10 @@ private:
 	T m_value;
 };
 
+
+/* A class to pretty-print NBT data. This class itself is private, and holds
+ * during-print information, such as indentation level and the stream.
+ */
 
 class PrettyPrinter {
 public:
@@ -147,6 +161,9 @@ private:
 	std::string m_indent;
 };
 
+
+/* The public interface.
+ */
 void pretty_print(std::ostream &os, const RootTag &root_tag) {
 	PrettyPrinter pp(os, "    ");
 	pp.pretty_print(root_tag);
