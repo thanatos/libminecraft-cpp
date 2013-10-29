@@ -127,16 +127,20 @@ private:
 	}
 
 	void print_tag(const Tag &tag, const Optional<Utf8String> &name) {
-		const ByteTag *bt = dynamic_cast<const ByteTag *>(&tag);
-		if(bt) {
-			print_simple_tag(*bt, name);
-			return;
-		}
-		const ShortTag *st = dynamic_cast<const ShortTag *>(&tag);
-		if(st) {
-			print_simple_tag(*st, name);
-			return;
-		}
+		#define HANDLE_SIMPLE_TAG(tag_type, variable_name) \
+			const tag_type *simple_tag_##variable_name = dynamic_cast<const tag_type *>(&tag); \
+			if(simple_tag_##variable_name) { \
+				print_simple_tag(*simple_tag_##variable_name, name); \
+				return; \
+			}
+		HANDLE_SIMPLE_TAG(ByteTag, byte_tag)
+		HANDLE_SIMPLE_TAG(ShortTag, short_tag)
+		HANDLE_SIMPLE_TAG(IntTag, int_tag)
+		HANDLE_SIMPLE_TAG(LongTag, long_tag)
+		HANDLE_SIMPLE_TAG(FloatTag, float_tag)
+		HANDLE_SIMPLE_TAG(DoubleTag, double_tag)
+
+		#undef HANDLE_SIMPLE_TAG
 
 		const StringTag *str_tag = dynamic_cast<const StringTag *>(&tag);
 		if(str_tag) {
