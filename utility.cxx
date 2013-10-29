@@ -14,29 +14,26 @@ namespace utility {
 template<typename T>
 struct TagNameLookup;
 
-template<>
-struct TagNameLookup<ByteTag> {
-	static const char * const name;
-};
-const char * const TagNameLookup<ByteTag>::name = "TAG_Byte";
+#define TAG_NAME_LOOKUP(cls, cls_name) \
+	template<> \
+	struct TagNameLookup<cls> { \
+		static const char * const name; \
+	}; \
+	const char * const TagNameLookup<cls>::name = cls_name;
 
-template<>
-struct TagNameLookup<ShortTag> {
-	static const char * const name;
-};
-const char * const TagNameLookup<ShortTag>::name = "TAG_Short";
+TAG_NAME_LOOKUP(ByteTag, "TAG_Byte")
+TAG_NAME_LOOKUP(ShortTag, "TAG_Short")
+TAG_NAME_LOOKUP(IntTag, "TAG_Int")
+TAG_NAME_LOOKUP(LongTag, "TAG_Long")
+TAG_NAME_LOOKUP(FloatTag, "TAG_Float")
+TAG_NAME_LOOKUP(DoubleTag, "TAG_Double")
+TAG_NAME_LOOKUP(ByteArrayTag, "TAG_Byte_Array")
+TAG_NAME_LOOKUP(StringTag, "TAG_String")
+TAG_NAME_LOOKUP(ListTagBase, "TAG_List")
+TAG_NAME_LOOKUP(CompoundTag, "TAG_Compound")
+TAG_NAME_LOOKUP(IntArrayTag, "TAG_Int_Array")
 
-template<>
-struct TagNameLookup<StringTag> {
-	static const char * const name;
-};
-const char * const TagNameLookup<StringTag>::name = "TAG_String";
-
-template<>
-struct TagNameLookup<CompoundTag> {
-	static const char * const name;
-};
-const char * const TagNameLookup<CompoundTag>::name = "TAG_Compound";
+#undef TAG_NAME_LOOKUP
 
 
 /* An optional class. A wrapped class that contains a single instance of T, but
