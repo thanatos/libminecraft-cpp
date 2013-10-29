@@ -170,6 +170,10 @@ namespace nbt {
 
 		RootTag read_nbt(InputStream &s);
 	}
+
+	namespace utility {
+		void pretty_print(std::ostream &os, const RootTag &root_tag);
+	}
 }
 
 namespace std {
