@@ -74,6 +74,13 @@ namespace nbt {
 	template<typename T>
 	class ListTag : public ListTagBase {
 	public:
+		/* Note that this is only intended to be typesafe for one level. This
+		 * reflects the NBT file itself, which allows a list of lists to be
+		 * different types. (A list containing two items, a list of doubles and
+		 * a list of strings, is, for the outermost list, serialized as a "list
+		 * of lists", and could legally contain a list of doubles followed by a
+		 * list of strings.)
+		 */
 		std::vector<std::unique_ptr<T>> values;
 	};
 

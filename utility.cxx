@@ -107,9 +107,57 @@ private:
 		m_stream << ' ' << tag.value << '\n';
 	}
 
+	void print_byte_tag(const ByteTag &tag, const Optional<Utf8String> &name) {
+		print_preamble<ByteTag>(name);
+		m_stream << ' ' << static_cast<int>(tag.value) << '\n';
+	}
+
+	void print_byte_array_tag(const ByteArrayTag &tag, const Optional<Utf8String> &name) {
+		print_preamble<ByteArrayTag>(name);
+		m_stream << " [" << tag.value.size() << " bytes]\n";
+	}
+
 	void print_string_tag(const StringTag &tag, const Optional<Utf8String> &name) {
 		print_preamble<StringTag>(name);
 		m_stream << ' ' << to_string(tag.value) << '\n';
+	}
+
+	template<typename T>
+	void print_list_specific_tag(const ListTag<T> &tag, const Optional<Utf8String> &name) {
+		print_preamble<ListTagBase>(name);
+		m_stream << tag.values.size() << " entries of type " << TagNameLookup<T>::name << '\n';
+		print_indent();
+		m_stream << "{\n";
+		++m_indent_count;
+		for(const auto &entry : tag.values) {
+			print_tag(*entry, Optional<Utf8String>());
+		}
+		--m_indent_count;
+		print_indent();
+		m_stream << "}\n";
+	}
+
+	void print_list_tag(const ListTagBase &tag, const Optional<Utf8String> &name) {
+		#define INNER_LIST_TRY_TYPE(inner_type) \
+			const ListTag<inner_type> *inner_type##_pointer = dynamic_cast<const ListTag<inner_type> *>(&tag); \
+			if(inner_type##_pointer) { \
+				print_list_specific_tag(*inner_type##_pointer, name); \
+				return; \
+			}
+		INNER_LIST_TRY_TYPE(ByteTag)
+		INNER_LIST_TRY_TYPE(ShortTag)
+		INNER_LIST_TRY_TYPE(IntTag)
+		INNER_LIST_TRY_TYPE(LongTag)
+		INNER_LIST_TRY_TYPE(FloatTag)
+		INNER_LIST_TRY_TYPE(DoubleTag)
+		INNER_LIST_TRY_TYPE(StringTag)
+		INNER_LIST_TRY_TYPE(ListTagBase)
+		INNER_LIST_TRY_TYPE(CompoundTag)
+		INNER_LIST_TRY_TYPE(IntArrayTag)
+
+		#undef INNER_LIST_TRY_TYPE
+
+		throw std::runtime_error("print_list_tag was passed a Tag of a type it didn't recognize.");
 	}
 
 	void print_compound_tag(const CompoundTag &tag, const Optional<Utf8String> &name) {
@@ -117,23 +165,28 @@ private:
 		m_stream << ' ' << tag.values.size() << " entries\n";
 		print_indent();
 		m_stream << "{\n";
-		m_indent_count += 1;
+		++m_indent_count;
 		for(const auto &entry : tag.values) {
 			print_tag(*entry.second, Optional<Utf8String>(entry.first));
 		}
-		m_indent_count -= 1;
+		--m_indent_count;
 		print_indent();
 		m_stream << "}\n";
 	}
 
 	void print_tag(const Tag &tag, const Optional<Utf8String> &name) {
+		const ByteTag *byte_tag = dynamic_cast<const ByteTag *>(&tag);
+		if(byte_tag) {
+			print_byte_tag(*byte_tag, name);
+			return;
+		}
+
 		#define HANDLE_SIMPLE_TAG(tag_type, variable_name) \
 			const tag_type *simple_tag_##variable_name = dynamic_cast<const tag_type *>(&tag); \
 			if(simple_tag_##variable_name) { \
 				print_simple_tag(*simple_tag_##variable_name, name); \
 				return; \
 			}
-		HANDLE_SIMPLE_TAG(ByteTag, byte_tag)
 		HANDLE_SIMPLE_TAG(ShortTag, short_tag)
 		HANDLE_SIMPLE_TAG(IntTag, int_tag)
 		HANDLE_SIMPLE_TAG(LongTag, long_tag)
@@ -141,6 +194,18 @@ private:
 		HANDLE_SIMPLE_TAG(DoubleTag, double_tag)
 
 		#undef HANDLE_SIMPLE_TAG
+
+		const ByteArrayTag *ba_tag = dynamic_cast<const ByteArrayTag *>(&tag);
+		if(ba_tag) {
+			print_byte_array_tag(*ba_tag, name);
+			return;
+		}
+
+		const ListTagBase *list_tag = dynamic_cast<const ListTagBase *>(&tag);
+		if(list_tag) {
+			print_list_tag(*list_tag, name);
+			return;
+		}
 
 		const StringTag *str_tag = dynamic_cast<const StringTag *>(&tag);
 		if(str_tag) {
@@ -154,8 +219,9 @@ private:
 			return;
 		}
 
-		throw std::runtime_error("Unknown tag class passed to print_tag!");
+		throw std::runtime_error("print_tag was passed a Tag of a type it didn't recognize.");
 	}
+
 
 	std::ostream &m_stream;
 	unsigned int m_indent_count;
